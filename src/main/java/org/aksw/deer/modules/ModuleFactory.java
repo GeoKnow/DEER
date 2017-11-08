@@ -9,6 +9,7 @@ import java.util.List;
 import org.aksw.deer.modules.Dereferencing.DereferencingModule;
 import org.aksw.deer.modules.authorityconformation.AuthorityConformationModule;
 import org.aksw.deer.modules.filter.FilterModule;
+import org.aksw.deer.modules.geo.GeoLocatorModule;
 import org.aksw.deer.modules.linking.LinkingModule;
 import org.aksw.deer.modules.nlp.NLPModule;
 import org.aksw.deer.modules.predicateconformation.PredicateConformationModule;
@@ -28,31 +29,34 @@ public class ModuleFactory {
 	public static final String FILTER_MODULE 			= "filter";
 	public static final String AUTHORITY_CONFORMATION_MODULE 	= "authorityconformation";
 	public static final String PREDICATE_CONFORMATION_MODULE 	= "predicateconformation";
-        
+	public static final String GEOLOCATOR_MODULE                 ="geolocator";
+
 	public static final String DEREFERENCING_MODULE_DESCRIPTION =   
 			"The purpose of the dereferencing module is to extend the model's Geo-spatial" +
-			"information by set of information through specified predicates";
+					"information by set of information through specified predicates";
 	public static final String LINKING_MODULE_DESCRIPTION       =   
 			"The purpose of the linking module is to enrich a model with additional " +
-			"geographic information URIs represented in owl:sameAs predicates";
+					"geographic information URIs represented in owl:sameAs predicates";
 	public static final String NLP_MODULE_DESCRIPTION           =   
 			"The purpose of the NLP module is to enrich a model with additional Geo-"+
-			"spatial information URIs represented by the addedGeoProperty predicates, "+
-			"witch by default is geoknow:relatedTo predicates";
+					"spatial information URIs represented by the addedGeoProperty predicates, "+
+					"witch by default is geoknow:relatedTo predicates";
 	public static final String AUTHORITY_CONFORMATION_MODULE_DESCRIPTION  =   
 			"The purpose of the authority conformation module is to hange a specified source URI " +
-			"to a specified target URI, for example using " +
-			"source URI of 'http://dbpedia.org' and target URI of 'http://geolift.org' " +
-			"changes a resource like 'http://dbpedia.org/Berlin' to 'http://geolift.org/Berlin'";
+					"to a specified target URI, for example using " +
+					"source URI of 'http://dbpedia.org' and target URI of 'http://geolift.org' " +
+					"changes a resource like 'http://dbpedia.org/Berlin' to 'http://geolift.org/Berlin'";
 	public static final String PREDICATE_CONFORMATION_MODULE_DESCRIPTION  =   
 			"The purpose of the predicate conformation module is to change a set of source predicates to a set of target predicates." +
-			"For example, all rdfs:label can be conformed to become skos:prefLabel";
+					"For example, all rdfs:label can be conformed to become skos:prefLabel";
 	public static final String FILTER_MODULE_DESCRIPTION        =   
 			"Runs a set of triples patterns against an input model to filter some triples out " +
-			"of it and export them to an output model. For example running triple pattern " +
-			"'?s <http://dbpedia.org/ontology/abstract> ?o' againt an input model containing " +
-			"'http://dbpedia.org/resource/Berlin' will generate output model containing only " +
-			"Berlin's abstracts of DBpedia";
+					"of it and export them to an output model. For example running triple pattern " +
+					"'?s <http://dbpedia.org/ontology/abstract> ?o' againt an input model containing " +
+					"'http://dbpedia.org/resource/Berlin' will generate output model containing only " +
+					"Berlin's abstracts of DBpedia";
+
+	public static final String GEOLOCATOR_MODULE_DESCRIPTION = " this module is used to take advance from the OSPName data to enrich RDF data";
 
 	/**
 	 * @param name
@@ -74,33 +78,38 @@ public class ModuleFactory {
 			return new PredicateConformationModule();
 		if (name.equalsIgnoreCase(FILTER_MODULE))
 			return new FilterModule();
+		if (name.equalsIgnoreCase(GEOLOCATOR_MODULE))
+			return new GeoLocatorModule();
 		//TODO Add any new modules here 
-		
+
 		logger.error("Sorry, The module " + name + " is not yet implemented. Exit with error ...");
 		System.exit(1);
 		return null;
 	}
 
-        public static String getDescription(String name) {
-            String description = "";
+	public static String getDescription(String name) {
+		String description = "";
 
-            if(name.equalsIgnoreCase(DEREFERENCING_MODULE)) {
-                description = DEREFERENCING_MODULE_DESCRIPTION;
-            } else if (name.equalsIgnoreCase(LINKING_MODULE)) {
-                description = LINKING_MODULE_DESCRIPTION;
-            } else if (name.equalsIgnoreCase(NLP_MODULE)) {
-                description = NLP_MODULE_DESCRIPTION;
-            } else if (name.equalsIgnoreCase(AUTHORITY_CONFORMATION_MODULE)) {
-                description = AUTHORITY_CONFORMATION_MODULE_DESCRIPTION;
-            } else if (name.equalsIgnoreCase(PREDICATE_CONFORMATION_MODULE)) {
-                description = PREDICATE_CONFORMATION_MODULE_DESCRIPTION;
-            } else if (name.equalsIgnoreCase(FILTER_MODULE)) {
-                description = FILTER_MODULE_DESCRIPTION;
-            }
+		if(name.equalsIgnoreCase(DEREFERENCING_MODULE)) {
+			description = DEREFERENCING_MODULE_DESCRIPTION;
+		} else if (name.equalsIgnoreCase(LINKING_MODULE)) {
+			description = LINKING_MODULE_DESCRIPTION;
+		} else if (name.equalsIgnoreCase(NLP_MODULE)) {
+			description = NLP_MODULE_DESCRIPTION;
+		} else if (name.equalsIgnoreCase(AUTHORITY_CONFORMATION_MODULE)) {
+			description = AUTHORITY_CONFORMATION_MODULE_DESCRIPTION;
+		} else if (name.equalsIgnoreCase(PREDICATE_CONFORMATION_MODULE)) {
+			description = PREDICATE_CONFORMATION_MODULE_DESCRIPTION;
+		} else if (name.equalsIgnoreCase(FILTER_MODULE)) {
+			description = FILTER_MODULE_DESCRIPTION;
+		}
+		else if (name.equalsIgnoreCase(GEOLOCATOR_MODULE)) {
+			description = GEOLOCATOR_MODULE_DESCRIPTION;
+		}
 
-            return description;
-        }
-	
+		return description;
+	}
+
 	/**
 	 * @return list of names of all implemented modules
 	 * @author sherif
@@ -113,22 +122,24 @@ public class ModuleFactory {
 		result.add(AUTHORITY_CONFORMATION_MODULE);
 		result.add(PREDICATE_CONFORMATION_MODULE);
 		result.add(FILTER_MODULE);
+		result.add(GEOLOCATOR_MODULE);
 		//TODO Add any new modules here 
 		return result;
 	}
-	
+
 	/**
 	 * @return list of instances of all implemented modules
 	 * @author sherif
 	 */
 	public static List<DeerModule> getImplementations(){
 		List<DeerModule> result = new ArrayList<DeerModule>();
-//		result.add(new DereferencingModule());
-//		result.add(new LinkingModule());
+		//		result.add(new DereferencingModule());
+		//		result.add(new LinkingModule());
 		result.add(new NLPModule());
 		result.add(new AuthorityConformationModule());
 		result.add(new PredicateConformationModule());
 		result.add(new FilterModule());
+		result.add(new GeoLocatorModule());
 		//TODO Add any new modules here 
 		return result;
 	}

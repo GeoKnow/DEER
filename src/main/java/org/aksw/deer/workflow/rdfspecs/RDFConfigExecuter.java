@@ -17,13 +17,12 @@ import org.aksw.deer.io.Writer;
 import org.aksw.deer.modules.Dereferencing.DereferencingModule;
 import org.aksw.deer.modules.authorityconformation.AuthorityConformationModule;
 import org.aksw.deer.modules.filter.FilterModule;
+import org.aksw.deer.modules.geo.GeoLocatorModule;
 import org.aksw.deer.modules.linking.LinkingModule;
 import org.aksw.deer.modules.nlp.NLPModule;
 import org.aksw.deer.modules.predicateconformation.PredicateConformationModule;
-import org.aksw.deer.operators.MergeOperator;
 import org.aksw.deer.operators.CloneOperator;
-import org.apache.log4j.Logger;
-
+import org.aksw.deer.operators.MergeOperator;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
@@ -37,6 +36,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.log4j.Logger;
 
 /**
  * @author sherif
@@ -124,6 +124,11 @@ public class RDFConfigExecuter {
 			}
 			if(type.equals(SPECS.FilterModule)){
 				FilterModule enricher = new FilterModule();
+				enrichedModel = enricher.process(inputDatasets.get(0), moduleParameters);
+				return enrichedModel;
+			}
+			if(type.equals(SPECS.GeoLocatorModule)){
+				GeoLocatorModule enricher = new GeoLocatorModule();
 				enrichedModel = enricher.process(inputDatasets.get(0), moduleParameters);
 				return enrichedModel;
 			}

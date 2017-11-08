@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.aksw.deer.json.ParameterType;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 

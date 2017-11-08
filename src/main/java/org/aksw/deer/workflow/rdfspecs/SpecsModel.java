@@ -11,20 +11,20 @@ import org.aksw.deer.modules.DeerModule;
 import org.aksw.deer.modules.Dereferencing.DereferencingModule;
 import org.aksw.deer.modules.authorityconformation.AuthorityConformationModule;
 import org.aksw.deer.modules.filter.FilterModule;
+import org.aksw.deer.modules.geo.GeoLocatorModule;
 import org.aksw.deer.modules.linking.LinkingModule;
 import org.aksw.deer.modules.nlp.NLPModule;
 import org.aksw.deer.modules.predicateconformation.PredicateConformationModule;
+import org.aksw.deer.operators.CloneOperator;
 import org.aksw.deer.operators.DeerOperator;
 import org.aksw.deer.operators.MergeOperator;
-import org.aksw.deer.operators.CloneOperator;
-import org.apache.log4j.Logger;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.log4j.Logger;
 
 /**
  * @author sherif
@@ -35,11 +35,11 @@ public class SpecsModel {
 	private static long moduleNr 			= 1;
 	private static long parameterNr 		= 1;
 	public Model specs;
-	
+
 	Model getConfModel(){
 		return specs;
 	}
-	
+
 	/**
 	 * 
 	 *@author sherif
@@ -103,7 +103,15 @@ public class SpecsModel {
 			specs.add(s, RDF.type, SPECS.Module);
 			specs.add(s, RDF.type, SPECS.NLPModule);
 			parameterType = SPECS.NLPModuleParameter;
-		}else{
+		}
+		else if(module instanceof GeoLocatorModule) {
+			s = ResourceFactory.createResource(SPECS.uri + "geolocator_module_" + moduleNr++);
+			specs.add(s, RDF.type, SPECS.Module);
+			specs.add(s, RDF.type, SPECS.GeoLocatorModule);
+			parameterType = SPECS.GeoLocatorModuleParameter;
+
+		}
+		else{
 			logger.error("Module " + module.getClass().getName() + " NOT implemented yet!, Exit with error.");
 			System.exit(1);
 		}
@@ -124,7 +132,7 @@ public class SpecsModel {
 		specs.setNsPrefix("RDFS", RDFS.getURI());
 		return specs;
 	}
-	
+
 	/**
 	 * Add DEER operator to specs
 	 * @param operator
@@ -171,7 +179,7 @@ public class SpecsModel {
 		}
 		return specs;
 	}
-	
+
 	/**
 	 * Add DEER dataset to specs
 	 * @param dataset
@@ -180,7 +188,7 @@ public class SpecsModel {
 	public void add(Resource dataset){
 		specs.add(dataset, RDF.type, SPECS.Dataset);
 	}
-	
+
 	/**
 	 * Add DEER dataset to specs
 	 * @param dataset
@@ -193,8 +201,8 @@ public class SpecsModel {
 		specs.add(dataset, SPECS.fromEndPoint, endpoint);
 		specs.add(dataset, SPECS.hasUri, uri);
 	}
-	
-	
+
+
 	/**
 	 * @param args
 	 * @author sherif

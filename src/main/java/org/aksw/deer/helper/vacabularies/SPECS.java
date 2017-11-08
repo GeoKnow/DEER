@@ -40,7 +40,7 @@ public class SPECS {
 	public static final Property hasOperator 			= property("hasOperator");
 	public static final Property hasInput 				= property("hasInput");
 	public static final Property hasOutput 				= property("hasOutput");
-	
+
 	public static final Resource Dataset 						= resource( "Dataset" );
 	public static final Resource Module 						= resource( "Module" );
 	public static final Resource DereferencingModule 			= resource( "DereferencingModule" );
@@ -49,6 +49,7 @@ public class SPECS {
 	public static final Resource FilterModule 					= resource( "FilterModule" );
 	public static final Resource AuthorityConformationModule	= resource( "AuthorityConformationModule" );
 	public static final Resource PredicateConformationModule	= resource( "PredicateConformationModule" );
+	public static final Resource GeoLocatorModule 				= resource( "GeoLocatorModule" );
 	public static final Resource ModuleParameter 				= resource( "ModuleParameter" );
 	public static final Resource NLPModuleParameter 			= resource( "NLPModuleParameter" );
 	public static final Resource DereferencingModuleParameter	= resource( "DereferencingModuleParameter" );
@@ -62,5 +63,5 @@ public class SPECS {
 	public static final Resource MergeOperatorParameter 		= resource( "MergeOperatorParameter" );
 	public static final Resource AuthorityConformationModuleParameter = resource( "AuthorityConformationModuleParameter" );
 	public static final Resource PredicateConformationModuleParameter = resource( "PredicateConformationModuleParameter" );
-	
+	public static final Resource GeoLocatorModuleParameter 				= resource( "GeoLocatorModuleParameter" );
 }

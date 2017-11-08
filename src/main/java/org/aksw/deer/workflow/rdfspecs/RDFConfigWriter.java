@@ -11,20 +11,20 @@ import org.aksw.deer.modules.DeerModule;
 import org.aksw.deer.modules.Dereferencing.DereferencingModule;
 import org.aksw.deer.modules.authorityconformation.AuthorityConformationModule;
 import org.aksw.deer.modules.filter.FilterModule;
+import org.aksw.deer.modules.geo.GeoLocatorModule;
 import org.aksw.deer.modules.linking.LinkingModule;
 import org.aksw.deer.modules.nlp.NLPModule;
 import org.aksw.deer.modules.predicateconformation.PredicateConformationModule;
+import org.aksw.deer.operators.CloneOperator;
 import org.aksw.deer.operators.DeerOperator;
 import org.aksw.deer.operators.MergeOperator;
-import org.aksw.deer.operators.CloneOperator;
-import org.apache.log4j.Logger;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.log4j.Logger;
 
 /**
  * @author sherif
@@ -85,7 +85,14 @@ public class RDFConfigWriter{
 			config.add(s, RDF.type, SPECS.Module);
 			config.add(s, RDF.type, SPECS.NLPModule);
 			parameterType = SPECS.NLPModuleParameter;
-		}else{
+		}
+		else if(module instanceof GeoLocatorModule){
+			s = ResourceFactory.createResource(SPECS.uri + "geolocator_module" + moduleNr++);
+			config.add(s, RDF.type, SPECS.Module);
+			config.add(s, RDF.type, SPECS.GeoLocatorModule);
+			parameterType = SPECS.GeoLocatorModuleParameter;
+		}
+		else{
 			logger.error("Module " + module.getClass().getName() + " NOT implemented yet!, Exit with error.");
 			System.exit(1);
 		}
