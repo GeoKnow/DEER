@@ -18,8 +18,8 @@ public class FindwantedObject {
 	int houseNumberHeader = 3;
 	int lonHeader = 4;
 	int latHeader = 5;
-	double Minthreshold = 0.5;
-	double dastanceThreshold = 0.1;
+	double Minthreshold = 0.4;
+	double dastanceThreshold = 0.988;
 
 	protected static double D2R = Math.PI / 180;
 	protected static double radius = 6367;
@@ -30,11 +30,11 @@ public class FindwantedObject {
 		List<String> longLatValues = find.TSVfindLonLat("Nordheimsvegen 11A");
 
 		if (!longLatValues.isEmpty()) {
-			String longValue = longLatValues.get(0);
-			String latValue = longLatValues.get(1);
-			System.out.println(" the Long and Lat values " + " = " + longValue + " " + latValue);
+			String latValue = longLatValues.get(0);
+			String longValue = longLatValues.get(1);
+			System.out.println(" the Long and Lat values " + " = " + latValue + " " + longValue);
 		}
-		List<String> AddressValues = find.TSVfindAddress("-6.5585288", "37.0111495");
+		List<String> AddressValues = find.TSVfindAddress("37.0111495","-6.5585288");
 		if (!AddressValues.isEmpty()) {
 			String AddrValue = AddressValues.get(0);
 			System.out.println(" the address value " + AddrValue);
@@ -81,7 +81,7 @@ public class FindwantedObject {
 	 * @param Lat
 	 * @return
 	 */
-	public List<String> TSVfindAddress(String Long, String Lat) {
+	public List<String> TSVfindAddress(String Lat, String Long) {
 
 		BufferedReader reader = null;
 		List<String> result = new ArrayList<>();
@@ -92,15 +92,15 @@ public class FindwantedObject {
 				while ((line = reader.readLine()) != null) {
 
 					String[] entryArray = line.split("\t");
-					double Long_DB = Double.parseDouble(entryArray[lonHeader]);
 					double Lat_DB = Double.parseDouble(entryArray[latHeader]);
+					double Long_DB = Double.parseDouble(entryArray[lonHeader]);
 
-					double Long_Rdf = Double.parseDouble(Long);
 					double Lat_Rdf = Double.parseDouble(Lat);
+					double Long_Rdf = Double.parseDouble(Long);
 
 					double d = distance(Lat_Rdf, Long_Rdf, Lat_DB, Long_DB);
 					double error = 1 / (1 + d);
-					System.out.println(" the error = " + error);
+				//	System.out.println(" the error = " + error);
 
 					if (error >= dastanceThreshold)
 						result.add(entryArray[streetHeader]);

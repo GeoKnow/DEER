@@ -1,0 +1,30 @@
+@prefix : <http://geoknow.org/specsontology/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+
+:d1		a				:Dataset ;
+		:inputFile			"/home/abddatascienceadmin/deer/datasets/6/input.nt".
+
+:d2		a				:Dataset ;
+		:outputFile		"/home/abddatascienceadmin/deer/datasets/6/output.ttl" ;
+		:outputFormat	"Turtle" .
+
+:geo	        a			:Module, :GeoLocatorModule  ;
+		rdfs:label		"Geo Locator Module" ;
+		:hasInput		:d1 ;
+		:hasOutput		:d2 ;
+		:hasParameter	        :geoPram1, :geoPram2, :geoPram3 .
+
+:geoPram1	a		        :ModuleParameter, :GeoLocatorModuleParameter ;
+		:hasKey			"inputlatproperty" ;
+		:hasValue		"http://deer.org/lat" .
+
+:geoPram2	a		       :ModuleParameter, :GeoLocatorModuleParameter ;
+		:hasKey			"inputlongproperty" ;
+		:hasValue		"http://deer.org/lon" .
+
+
+:geoPram3	a		       :ModuleParameter, :GeoLocatorModuleParameter ;
+		:hasKey			"outputaddressproperty" ;
+		:hasValue		"http://deer.org/street" .
+

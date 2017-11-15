@@ -59,21 +59,21 @@ public class GeoLocatorModule implements DeerModule {
 	 */
 	private Model findAddress(Model model, String inputLatPropName, String inputLongPropName) {
 
-		Property inputLongProp = ResourceFactory.createProperty(inputLongPropName);
-		StmtIterator iter_Long = model.listStatements(null, inputLongProp, (RDFNode) null);
-		while (iter_Long.hasNext()) {
-			Statement stmt = iter_Long.nextStatement(); 
+		Property inputLatProp = ResourceFactory.createProperty(inputLatPropName);
+		StmtIterator iter_Lat = model.listStatements(null, inputLatProp, (RDFNode) null);
+		while (iter_Lat.hasNext()) {
+			Statement stmt = iter_Lat.nextStatement(); 
 			Resource subject = stmt.getSubject(); 
 			RDFNode object = stmt.getObject();
-			String OurObjectLong = object.asLiteral().toString();
-			Property inputLatProp = ResourceFactory.createProperty(inputLatPropName);
-			NodeIterator objectLatItr = model.listObjectsOfProperty(subject, inputLatProp);
+			String OurObjectLat = object.asLiteral().toString();
+			Property inputLongProp = ResourceFactory.createProperty(inputLongPropName);
+			NodeIterator objectLatItr = model.listObjectsOfProperty(inputLongProp);
 			List<String> values_Adress = new ArrayList<>();
 
 			while (objectLatItr.hasNext()) {
-				String OurObjectLat = objectLatItr.next().asLiteral().toString();
+				String OurObjectLong = objectLatItr.next().asLiteral().toString();
 				FindwantedObject find = new FindwantedObject();
-				values_Adress.addAll(find.TSVfindAddress(OurObjectLong, OurObjectLat));
+				values_Adress.addAll(find.TSVfindAddress(OurObjectLat, OurObjectLong));
 			}
 			for (String Iteration : values_Adress) {
 
@@ -103,8 +103,8 @@ public class GeoLocatorModule implements DeerModule {
 				RDFNode NewObjectToAddOfAddress = ResourceFactory.createStringLiteral(Iteration);
 				Property outputLatAddress = ResourceFactory.createProperty(OUTPUT_LAT_PROPERTY);
 				model.add(subject, outputLatAddress, NewObjectToAddOfAddress);
-				Property outputLongtAddress = ResourceFactory.createProperty(OUTPUT_LONG_PROPERTY);
-				model.add(subject, outputLongtAddress, NewObjectToAddOfAddress);
+				//Property outputLongtAddress = ResourceFactory.createProperty(OUTPUT_LONG_PROPERTY);
+				//model.add(subject, outputLongtAddress, NewObjectToAddOfAddress);
 			}
 
 		}
@@ -151,5 +151,5 @@ public class GeoLocatorModule implements DeerModule {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	public static void main(String[] args) {}
 }

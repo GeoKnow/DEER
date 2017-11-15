@@ -17,11 +17,11 @@ public class FindwantedObjectTest {
 		
 		String y= "-49.1114599";
 		String x="-26.8897016";
-		List <String> values = find.TSVfindLonLat("Rua Albo");
+		List <String> values = find.TSVfindLonLat("Rua Francisco Alb");
 		System.out.println(" is this true " + values);
 		Assert.assertTrue(values.contains(y));
 		Assert.assertTrue(values.contains(x));
-System.out.println(" the test is  done ");
+System.out.println(" the test1 is  done ");
 	}
 	@Test
 	public void FindAddressTest() {
@@ -31,7 +31,7 @@ System.out.println(" the test is  done ");
 		String y= "-49.1114599";
 		String x="-26.8897016";
 		String z= "Rua Francisco Albo";
-		List<String> values = find.TSVfindAddress(y,x);
+		List<String> values = find.TSVfindAddress(x,y);
 		System.out.println(values);
 		Assert.assertTrue(values.contains(z));
 	//	Assert.assertTrue(values.containsValue(x));
