@@ -28,9 +28,22 @@ import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 
+
+
 public class LuceneIndexingfromCSV {
 
-	/////////////// ****** Start of the main method ******//////////////////////
+	private static Logger logger = LoggerFactory.getLogger(LuceneIndexingfromCSV.class);
+
+	static String input_1 = "/home/abddatascienceadmin/Downloads/geoconverted.csv";
+	public static File csvFile = new File(input_1);
+	//private List<String> indexedFields = new ArrayList<String>();
+	private IndexSearcher indexSearcher;
+	private String NameOfindexDirectory;
+
+	public static final String INDEX_DIRECTORY = "lucene-index";
+	public static final Version LUCENE_VERSION = Version.LUCENE_36;
+
+	//String stor;
 
 	/**
 	 * @param args
@@ -38,10 +51,12 @@ public class LuceneIndexingfromCSV {
 	 * @throws IOException
 	 * @throws org.apache.lucene.queryParser.ParseException
 	 */
-	public static void main(String[] args)
-			throws ParseException, IOException, org.apache.lucene.queryParser.ParseException {
+	public static void main(String[] args) throws ParseException, IOException, org.apache.lucene.queryParser.ParseException {
+
 		BasicConfigurator.configure();
+
 		LuceneIndexingfromCSV indexfromcsv = new LuceneIndexingfromCSV("Nameofdirectory");
+
 		try {
 			indexfromcsv.createIndexFromCSV(csvFile, true);
 
@@ -49,35 +64,20 @@ public class LuceneIndexingfromCSV {
 			e.printStackTrace();
 		}
 
-		String result = indexfromcsv.getThestring("-26.8645202");
+		List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
+		System.out.println(" the latValue is found: " + result.get(0));
+		System.out.println(" the lonValue is found: " + result.get(1));
 
-		System.out.println(" the keyword is found: " + result);
+		String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
+
+		System.out.println(" the street is found: " + result_2);
 	}
-	/////////////// ****** End of the main method ******/////////////////////////
-
-	////////// +++++++++++++++++++++++++++++++++++++++++++++++++++++++////////////
-
-	static String input_1 = "/home/abddatascienceadmin/Downloads/geo.csv";
-	private static File csvFile = new File(input_1);
-
-	private List<String> indexedFields = new ArrayList<String>();
-
-	private IndexSearcher indexSearcher;
-	private String NameOfindexDirectory;
-
-	public static final String INDEX_DIRECTORY = "lucene-index";
-	public static final Version LUCENE_VERSION = Version.LUCENE_36;
-
-	String stor;
-
-	private static Logger logger = LoggerFactory.getLogger(LuceneIndexingfromCSV.class);
-	////////// +++++++++++++++++++++++++++++++++++++++++++++++++++++++////////////
 
 	/**
 	 * @param Name
 	 */
 
-	public LuceneIndexingfromCSV(String Name) {
+	LuceneIndexingfromCSV(String Name) {
 		NameOfindexDirectory = INDEX_DIRECTORY + "_" + Name;
 		try {
 			if (!new File(NameOfindexDirectory).exists()) {
@@ -101,12 +101,9 @@ public class LuceneIndexingfromCSV {
 		if (!csvFile.exists()) {
 			throw new FileNotFoundException("CSV file not found: " + csvFile);
 		}
-		/////////////////// <-----------------*********************------------------------->////////////////////////
 
 		IndexWriterConfig config = getIndexWriterConfig(createNewIndex);
 		IndexWriter indexWriter = new IndexWriter(FSDirectory.open(new File(NameOfindexDirectory)), config);
-
-		/////////////////// <-----------------*********************------------------------->////////////////////////
 
 		CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(csvFile), "UTF-8"));
 		String[] nextLine;
@@ -125,23 +122,19 @@ public class LuceneIndexingfromCSV {
 				if (nextLine.length != headers.size())
 					continue;
 				Document d = new Document();
-				for (int i = 0; i < nextLine.length; i++) {
-					String s = nextLine[i];
-					// System.out.println("print ss values : " + s + "<----->");
+				String latPos = nextLine[nextLine.length-1];
+				String lonPos = nextLine[nextLine.length-2];
+				String hausNumberPos = nextLine[nextLine.length-3];
+				String streetPos = nextLine[nextLine.length-4];
 
-					// Skip empty values
-					if (s.trim().equals(""))
-						continue;
+				String StreetAndHaus= streetPos+ " " + hausNumberPos;
 
-					else {
-						String ss = s.toString();// + " " + street + " " + hausNumber + " " + lon +" " +lat;
-						// str.add(s);
+				d.add(new Field("latPos", latPos, Field.Store.YES, Field.Index.NOT_ANALYZED));
+				d.add(new Field("lonPos", lonPos, Field.Store.YES, Field.Index.NOT_ANALYZED));
+				d.add(new Field("streetPos", StreetAndHaus, Field.Store.YES, Field.Index.NOT_ANALYZED));
 
-						System.out.println(" print this STRING str. ---->" + ss);
-						d.add(new Field(headers.get(i), ss, Field.Store.YES, Field.Index.NOT_ANALYZED));
-
-					}
-				}
+				//}
+				//}
 				indexWriter.addDocument(d);
 
 			}
@@ -149,13 +142,13 @@ public class LuceneIndexingfromCSV {
 		}
 		indexWriter.close();
 		reader.close();
-		logger.info("Done creating index.");
+		logger.info("creating index is done.");
 
 		IndexReader indexReader = IndexReader.open(FSDirectory.open(new File(NameOfindexDirectory)));
 		indexSearcher = new IndexSearcher(indexReader);
 
-		indexedFields.addAll(headers);
-		System.out.println("print the headers " + headers);
+		/*		indexedFields.addAll(headers);
+		System.out.println("print the headers " + headers);*/
 	}
 
 	/**
@@ -166,66 +159,103 @@ public class LuceneIndexingfromCSV {
 	 * @throws ParseException
 	 * @throws org.apache.lucene.queryParser.ParseException
 	 */
-	public String getThestring(String streetName)
+
+	public List<String> getLanandLon(String streetName)
 			throws ParseException, IOException, ParseException, org.apache.lucene.queryParser.ParseException {
-		// StandardAnalyzer analyzer = new
-		// StandardAnalyzer(LuceneIndexingfromCSV.LUCENE_VERSION);
+		List<String> arr = new ArrayList<String>(2);
+		org.apache.lucene.search.Query query = null;
+		Term term = new Term("streetPos", streetName.trim());
 
-		for (String field : indexedFields) {
-			// QueryParser parser = new QueryParser(LuceneIndexingfromCSV.LUCENE_VERSION,
-			// field.trim(), analyzer);
-			// System.out.println("sho mw what is inside the indexedfield -----> " +
-			// indexedFields);
+		query = new FuzzyQuery(term, 0.9f);
 
-			org.apache.lucene.search.Query query = null;
-			Term term = new Term(field, streetName.trim());
+		// query = parser.parse(streetName.trim());
+		// TopDocs hits = searcher.search(query);
 
-			query = new FuzzyQuery(term, 0.9f);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(100, true);
+		indexSearcher.search(query, collector);
 
-			// query = parser.parse(streetName.trim());
+		ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
-			// TopDocs hits = searcher.search(query);
+		for (int i = 0; i < hits.length; ++i) {
+			int docId = hits[i].doc;
+			System.out.println("Score: " + hits[i].score);
+			Document d = indexSearcher.doc(docId);
+			System.out.println(i + ". " + d.get("streetPos"));
+			String streetValue = d.get("streetPos");
+			if(!streetValue.isEmpty());
 
-			TopScoreDocCollector collector = TopScoreDocCollector.create(100, true);
-			indexSearcher.search(query, collector);
+			String latValue=d.get("latPos");
+			String lonValue= d.get("lonPos");
+			arr.add(0,latValue);
+			arr.add(1,lonValue);
 
-			ScoreDoc[] hits = collector.topDocs().scoreDocs;
+			//System.out.println("Print the latValue: "+ arr[0]);
+			//System.out.println("Print the lonValue: "+ arr[0]);
 
-			// if (hits.length == 0)
-			// continue;
-			/*
-			 * if (hits[0].score >= 0.0f) { int docId = hits[0].doc; Document d =
-			 * indexSearcher.doc(docId); String ss;//new ArrayList<Fieldable>(); ss=
-			 * d.getFields().toString();
-			 * System.out.println("Found match from Lucene for Steet:" + streetName +
-			 * "! Document matching field: " + d.get(field));
-			 * // @SuppressWarnings("deprecation")
-			 * 
-			 * //Field ss= d.getField(field); //ss.getIndexOptions();
-			 * System.out.println(" print the value of this sssss -----> " + ss); return
-			 * getThestring(streetName); }
-			 */
-
-			// System.out.println("Found " + hits.length + " hits.");
-			for (int i = 0; i < hits.length; ++i) {
-				int docId = hits[i].doc;
-				System.out.println("Score: " + hits[i].score);
-				Document d = indexSearcher.doc(docId);
-				System.out.println(i + ". " + d.get(field));
-				stor = d.get(field);
-				// @SuppressWarnings("deprecation")
-				@SuppressWarnings("deprecation")
-				Field fieldOfStore = d.getField(field);
-				System.out.println("print the fields of stor: " + fieldOfStore);
-			}
 		}
-		return stor;
+		//}
+		return arr;
+	}
+
+	/**
+	 * @param lat
+	 * @param lon
+	 * @return
+	 * @throws ParseException
+	 * @throws IOException
+	 * @throws ParseException
+	 * @throws org.apache.lucene.queryParser.ParseException
+	 */
+	public String getStreetadress(String lat, String lon)
+
+			throws ParseException, IOException, ParseException, org.apache.lucene.queryParser.ParseException {
+		String streetValue=null;
+		org.apache.lucene.search.Query query = null;
+		Term term = new Term("latPos", lat.trim());
+
+		query = new FuzzyQuery(term, 0.9f);
+
+		// query = parser.parse(streetName.trim());
+		// TopDocs hits = searcher.search(query);
+
+		TopScoreDocCollector collector = TopScoreDocCollector.create(100, true);
+		indexSearcher.search(query, collector);
+
+		ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+		for (int i = 0; i < hits.length; ++i) {
+			int docId = hits[i].doc;
+			System.out.println("Score: " + hits[i].score);
+			Document d = indexSearcher.doc(docId);
+			System.out.println(i + ". " + d.get("latPos"));
+			String latValue = d.get("latPos");
+
+			//System.out.println("Print the latValue: "+ latValue);
+
+			if(!latValue.isEmpty());
+			Term term_1 = new Term("lonPos", lon.trim());
+
+			query = new FuzzyQuery(term_1, 0.9f);
+
+			String lonValue=d.get("lonPos");
+
+			//System.out.println("Print the latValue: "+ lonValue);
+
+			if(!latValue.isEmpty()&& !lonValue.isEmpty());
+			streetValue= d.get("streetPos");
+
+			//System.out.println("Print the StreetValue: "+ streetValue );
+
+
+		}
+		return streetValue;
 	}
 
 	/**
 	 * @param createNewIndex
 	 * @return
 	 */
+
 	private IndexWriterConfig getIndexWriterConfig(boolean createNewIndex) {
 		IndexWriterConfig config = new IndexWriterConfig(LuceneIndexingfromCSV.LUCENE_VERSION,
 				new StandardAnalyzer(LuceneIndexingfromCSV.LUCENE_VERSION));
