@@ -34,7 +34,7 @@ public class LuceneIndexingfromCSV {
 
 	private static Logger logger = LoggerFactory.getLogger(LuceneIndexingfromCSV.class);
 
-	static String input_1 = "/home/abddatascienceadmin/Downloads/geoconverted.csv";
+	static String input_1 = "/home/abddatascienceadmin/Downloads/geoconvert.csv";
 	public static File csvFile = new File(input_1);
 	//private List<String> indexedFields = new ArrayList<String>();
 	private IndexSearcher indexSearcher;
@@ -64,13 +64,13 @@ public class LuceneIndexingfromCSV {
 			e.printStackTrace();
 		}
 
-		List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
-		System.out.println(" the latValue is found: " + result.get(0));
-		System.out.println(" the lonValue is found: " + result.get(1));
+		//List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
+		//System.out.println(" the latValue is found: " + result.get(0));
+		//System.out.println(" the lonValue is found: " + result.get(1));
 
-		String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
+		//String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
 
-		System.out.println(" the street is found: " + result_2);
+		//System.out.println(" the street is found: " + result_2);
 	}
 
 	/**
@@ -166,21 +166,21 @@ public class LuceneIndexingfromCSV {
 		org.apache.lucene.search.Query query = null;
 		Term term = new Term("streetPos", streetName.trim());
 
-		query = new FuzzyQuery(term, 0.9f);
+		query = new FuzzyQuery(term, 0.94f);
 
 		// query = parser.parse(streetName.trim());
 		// TopDocs hits = searcher.search(query);
 
-		TopScoreDocCollector collector = TopScoreDocCollector.create(100, true);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(1, true);
 		indexSearcher.search(query, collector);
 
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
-			System.out.println("Score: " + hits[i].score);
+			//System.out.println("Score: " + hits[i].score);
 			Document d = indexSearcher.doc(docId);
-			System.out.println(i + ". " + d.get("streetPos"));
+			//System.out.println(i + ". " + d.get("streetPos"));
 			String streetValue = d.get("streetPos");
 			if(!streetValue.isEmpty());
 
@@ -225,9 +225,9 @@ public class LuceneIndexingfromCSV {
 
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
-			System.out.println("Score: " + hits[i].score);
+			//System.out.println("Score: " + hits[i].score);
 			Document d = indexSearcher.doc(docId);
-			System.out.println(i + ". " + d.get("latPos"));
+			//System.out.println(i + ". " + d.get("latPos"));
 			String latValue = d.get("latPos");
 
 			//System.out.println("Print the latValue: "+ latValue);

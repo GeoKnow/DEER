@@ -29,6 +29,9 @@ public class GeoLocatorModule implements DeerModule {
 	public static final String OUTPUT_ADDRESS_PROPERTY           = "outputaddressproperty"; 
 	public static final String OUTPUT_LAT_PROPERTY               = "outputlatproperty";
 	public static final String OUTPUT_LONG_PROPERTY              = "outputlongproperty";
+	
+	LuceneIndexingfromCSV find_1=new LuceneIndexingfromCSV("nameofdir");
+
 
 	@Override
 	public Model process(Model model, Map<String, String> parameters) {
@@ -70,7 +73,7 @@ public class GeoLocatorModule implements DeerModule {
 	 * @throws ParseException 
 	 * 
 	 */
-	//@SuppressWarnings("null")
+	@SuppressWarnings("null")
 	private Model findAddress(Model model, String inputLatPropName, String inputLongPropName) throws ParseException, IOException {
 
 		Property inputLatProp = ResourceFactory.createProperty(inputLatPropName);
@@ -82,34 +85,36 @@ public class GeoLocatorModule implements DeerModule {
 			String OurObjectLat = object.asLiteral().toString();
 			Property inputLongProp = ResourceFactory.createProperty(inputLongPropName);
 			NodeIterator objectLatItr = model.listObjectsOfProperty(inputLongProp);
-		    String values_Adress = null;// new ArrayList<>();
+			String values_Adress = null;// new ArrayList<>();
 
 			while (objectLatItr.hasNext()) {
 				String OurObjectLong = objectLatItr.next().asLiteral().toString();
 				//FindwantedObject find = new FindwantedObject();
-				LuceneIndexingfromCSV find_1=new LuceneIndexingfromCSV("nameofdir");
-				try {
+				//LuceneIndexingfromCSV find_1=new LuceneIndexingfromCSV("nameofdir");
+/*				try {
 					find_1.createIndexFromCSV(LuceneIndexingfromCSV.csvFile, true);
 
 				} catch (IOException e) {
 					e.printStackTrace();
-				}
+				}*/
 				//values_Adress.addAll(find.TSVfindAddress(OurObjectLat, OurObjectLong));
 				try {
 					values_Adress=find_1.getStreetadress(OurObjectLat, OurObjectLong);
 					//if(values_Adress.isEmpty());
 					
+
 				} catch (org.apache.lucene.queryParser.ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
+			System.out.println(" print the street value = " +values_Adress );
 			//for (String Iteration : values_Adress) {
-
-				RDFNode NewObjectToAddOfLong = ResourceFactory.createStringLiteral(values_Adress);
-				Property outputLongProp = ResourceFactory.createProperty(OUTPUT_ADDRESS_PROPERTY);
-				model.add(subject, outputLongProp, NewObjectToAddOfLong);
-			//}
+			if(values_Adress!=null) {
+			RDFNode NewObjectToAddOfLong = ResourceFactory.createStringLiteral(values_Adress);
+			Property outputLongProp = ResourceFactory.createProperty(OUTPUT_ADDRESS_PROPERTY);
+			model.add(subject, outputLongProp, NewObjectToAddOfLong);
+			}
 		}
 		return model;
 	}
@@ -126,13 +131,12 @@ public class GeoLocatorModule implements DeerModule {
 			String OurObjectAdress = object.asLiteral().toString();
 			//FindwantedObject find = new FindwantedObject();
 			List<String> values_Address = null;
-			LuceneIndexingfromCSV find_1=new LuceneIndexingfromCSV("nameofdir");
-			try {
+/*			try {
 				find_1.createIndexFromCSV(LuceneIndexingfromCSV.csvFile, true);
 
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
+			}*/
 			try {
 				values_Address = find_1.getLanandLon(OurObjectAdress);
 			} catch (ParseException e) {

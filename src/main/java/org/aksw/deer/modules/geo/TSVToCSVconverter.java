@@ -7,8 +7,8 @@ import java.util.Scanner;
 
 public class TSVToCSVconverter {
 
-	static String input_1 = "/home/abddatascienceadmin/Downloads/geo.tsv";
-	static String output_1 = "/home/abddatascienceadmin/Downloads/geoconverted.csv";
+	static String input_1 = "/home/abddatascienceadmin/Downloads/planet-latest_housenumbers.tsv";
+	static String output_1 = "/home/abddatascienceadmin/Downloads/geoconvert.csv";
 
 	// @SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
@@ -43,7 +43,7 @@ public class TSVToCSVconverter {
 
 		while (scan.hasNext()) {
 			String csvFormat= scan.nextLine().replace("\t", ",");
-			System.out.println(csvFormat);
+			//System.out.println(csvFormat);
 			writer.append(csvFormat);
 			//System.out.println("the converting from TSV to CVS done <-____->");
 			writer.append("\n");
