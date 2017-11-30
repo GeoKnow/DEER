@@ -108,7 +108,7 @@ public class GeoLocatorModule implements DeerModule {
 					e.printStackTrace();
 				}
 			}
-			System.out.println(" print the street value = " +values_Adress );
+			//System.out.println(" print the street value = " +values_Adress );
 			//for (String Iteration : values_Adress) {
 			if(values_Adress!=null) {
 			RDFNode NewObjectToAddOfLong = ResourceFactory.createStringLiteral(values_Adress);

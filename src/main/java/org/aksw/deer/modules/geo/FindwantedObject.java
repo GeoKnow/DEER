@@ -100,7 +100,7 @@ public class FindwantedObject {
 
 					double d = distance(Lat_Rdf, Long_Rdf, Lat_DB, Long_DB);
 					double error = 1 / (1 + d);
-				//	System.out.println(" the error = " + error);
+					System.out.println(" the error = " + error+ " AND "+ "the DISTANCE= "+ d);
 
 					if (error >= dastanceThreshold)
 						result.add(entryArray[streetHeader]);

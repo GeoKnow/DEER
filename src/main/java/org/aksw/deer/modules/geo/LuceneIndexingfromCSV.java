@@ -39,7 +39,16 @@ public class LuceneIndexingfromCSV {
 	//private List<String> indexedFields = new ArrayList<String>();
 	private IndexSearcher indexSearcher;
 	private String NameOfindexDirectory;
+	
+	List<Double> latDb=new ArrayList<Double>();
+	List<Double> lonDb=new ArrayList<Double>();
+	private Double distance;
+	
+	protected static double D2R = Math.PI / 180;
+	protected static double radius = 6367;
+	protected static double dastanceThreshold = 0.988;
 
+	
 	public static final String INDEX_DIRECTORY = "lucene-index";
 	public static final Version LUCENE_VERSION = Version.LUCENE_36;
 
@@ -64,11 +73,11 @@ public class LuceneIndexingfromCSV {
 			e.printStackTrace();
 		}
 
-		//List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
+		List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
 		//System.out.println(" the latValue is found: " + result.get(0));
 		//System.out.println(" the lonValue is found: " + result.get(1));
 
-		//String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
+		String result_2= indexfromcsv.getStreetadress("-26.8178931","-49.1116889" );
 
 		//System.out.println(" the street is found: " + result_2);
 	}
@@ -211,14 +220,18 @@ public class LuceneIndexingfromCSV {
 			throws ParseException, IOException, ParseException, org.apache.lucene.queryParser.ParseException {
 		String streetValue=null;
 		org.apache.lucene.search.Query query = null;
+		
+		double Lat_Rdf = Double.parseDouble(lat);
+		double Lon_Rdf = Double.parseDouble(lon);
 		Term term = new Term("latPos", lat.trim());
-
-		query = new FuzzyQuery(term, 0.9f);
+          String xx= term.text();
+          System.out.println(" print the term = "+ xx);
+		query = new FuzzyQuery(term, 0.7f);
 
 		// query = parser.parse(streetName.trim());
 		// TopDocs hits = searcher.search(query);
 
-		TopScoreDocCollector collector = TopScoreDocCollector.create(100, true);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(4, true);
 		indexSearcher.search(query, collector);
 
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
@@ -229,21 +242,44 @@ public class LuceneIndexingfromCSV {
 			Document d = indexSearcher.doc(docId);
 			//System.out.println(i + ". " + d.get("latPos"));
 			String latValue = d.get("latPos");
-
-			//System.out.println("Print the latValue: "+ latValue);
+                   List<String> acumlatValue =new ArrayList<String>();
+                   acumlatValue.add(latValue);
+                   
+           		for (String temp : acumlatValue) {
+        			//System.out.println(temp);
+        			latDb.add(Double.parseDouble(temp));
+        			System.out.println("Print the latValue acuumolator: "+ latDb);
+        		}
+			//System.out.println("Print the latValue acuumolator: "+ latDb);
 
 			if(!latValue.isEmpty());
 			Term term_1 = new Term("lonPos", lon.trim());
 
-			query = new FuzzyQuery(term_1, 0.9f);
+			query = new FuzzyQuery(term_1, 0.7f);
 
 			String lonValue=d.get("lonPos");
+		     List<String> acumlonValue =new ArrayList<String>();
+             acumlonValue.add(lonValue);
+             
+        		for (String temp : acumlonValue) {
+     			//System.out.println(temp);
+     			lonDb.add(Double.parseDouble(temp));
+    			System.out.println("Print the lontValue acuumolator: "+ lonDb);
 
-			//System.out.println("Print the latValue: "+ lonValue);
-
+     		}
+             
 			if(!latValue.isEmpty()&& !lonValue.isEmpty());
+			if(latDb.size()==lonDb.size()) {
+				for (int i1 = 0; i1 < latDb.size(); i1++) {
+				
+				
+			 distance= distance( Lat_Rdf,  Lon_Rdf, latDb.get(i1 ),lonDb.get(i1));}
+				double error = 1 / (1 + distance);
+				System.out.println(" the DISTANCE = " + distance + " AND "+ "the ERROR = "+ error);
+				if (error >= dastanceThreshold)
 			streetValue= d.get("streetPos");
-
+				System.out.println("Print the StreetValue: "+ streetValue );
+			}
 			//System.out.println("Print the StreetValue: "+ streetValue );
 
 
@@ -264,5 +300,15 @@ public class LuceneIndexingfromCSV {
 		else
 			config.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
 		return config;
+	}
+	
+	
+	public static double distance(double lat1, double lon1, double lat2, double lon2) {
+
+		double value1 = Math.pow(Math.sin((lat1 - lat2) / 2.0) * D2R, 2)
+				+ Math.cos(lat1 * D2R) * Math.cos(lat2 * D2R) * Math.pow(Math.sin((lon1 - lon2) / 2.0) * D2R, 2);
+		double c = 2 * Math.atan2(Math.sqrt(value1), Math.sqrt(1 - value1));
+		double d = radius * c;
+		return d;
 	}
 }
