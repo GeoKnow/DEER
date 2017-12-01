@@ -46,7 +46,7 @@ public class LuceneIndexingfromCSV {
 	
 	protected static double D2R = Math.PI / 180;
 	protected static double radius = 6367;
-	protected static double dastanceThreshold = 0.988;
+	protected static double dastanceThreshold = 0.98;
 
 	
 	public static final String INDEX_DIRECTORY = "lucene-index";
@@ -77,9 +77,9 @@ public class LuceneIndexingfromCSV {
 		//System.out.println(" the latValue is found: " + result.get(0));
 		//System.out.println(" the lonValue is found: " + result.get(1));
 
-		String result_2= indexfromcsv.getStreetadress("-26.8178931","-49.1116889" );
+		String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
 
-		//System.out.println(" the street is found: " + result_2);
+		System.out.println(" the street is found: " + result_2);
 	}
 
 	/**
@@ -193,8 +193,8 @@ public class LuceneIndexingfromCSV {
 			String streetValue = d.get("streetPos");
 			if(!streetValue.isEmpty());
 
-			String latValue=d.get("latPos");
-			String lonValue= d.get("lonPos");
+			String latValue = d.get("latPos");
+			String lonValue = d.get("lonPos");
 			arr.add(0,latValue);
 			arr.add(1,lonValue);
 
@@ -270,10 +270,10 @@ public class LuceneIndexingfromCSV {
              
 			if(!latValue.isEmpty()&& !lonValue.isEmpty());
 			if(latDb.size()==lonDb.size()) {
-				for (int i1 = 0; i1 < latDb.size(); i1++) {
+				for (int k = 0; k < latDb.size(); k++) {
 				
 				
-			 distance= distance( Lat_Rdf,  Lon_Rdf, latDb.get(i1 ),lonDb.get(i1));}
+			 distance= distance( Lat_Rdf,  Lon_Rdf, latDb.get(k ),lonDb.get(k));}
 				double error = 1 / (1 + distance);
 				System.out.println(" the DISTANCE = " + distance + " AND "+ "the ERROR = "+ error);
 				if (error >= dastanceThreshold)
@@ -303,6 +303,13 @@ public class LuceneIndexingfromCSV {
 	}
 	
 	
+	/**
+	 * @param lat1
+	 * @param lon1
+	 * @param lat2
+	 * @param lon2
+	 * @return
+	 */
 	public static double distance(double lat1, double lon1, double lat2, double lon2) {
 
 		double value1 = Math.pow(Math.sin((lat1 - lat2) / 2.0) * D2R, 2)
