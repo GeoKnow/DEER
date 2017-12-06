@@ -8,7 +8,12 @@ import java.util.List;
 
 import uk.ac.shef.wit.simmetrics.similaritymetrics.JaccardSimilarity;
 
+/**
+ * @author Abdullah Ahmed
+ *
+ */
 public class FindwantedObject {
+	
 
 	final String fileName = "src/main/resources/geo.tsv";
 

@@ -30,28 +30,41 @@ import au.com.bytecode.opencsv.CSVReader;
 
 
 
+/**
+ * 
+ * the Vincenty formula is more accurate than Great Circle formula, 
+ * and this is very important when 
+ * the distance between points is very short,e.g. in our case
+ * the Threshold can be updated as follow: threshold >= 1-(k/100km), k is integer number with rang [1,100], 
+ * iff k= 1, it means all distances less than one Km can pass.
+ * 
+ * 
+ * @author Abdullah Ahmed
+ *
+ */
 public class LuceneIndexingfromCSV {
+
 
 	private static Logger logger = LoggerFactory.getLogger(LuceneIndexingfromCSV.class);
 
 	static String input_1 = "/home/abddatascienceadmin/Downloads/geoconvert.csv";
 	public static File csvFile = new File(input_1);
+
 	//private List<String> indexedFields = new ArrayList<String>();
 	private IndexSearcher indexSearcher;
 	private String NameOfindexDirectory;
-	
-	List<Double> latDb=new ArrayList<Double>();
-	List<Double> lonDb=new ArrayList<Double>();
+
 	private Double distance;
-	
+
 	protected static double D2R = Math.PI / 180;
 	protected static double radius = 6367;
 	protected static double dastanceThreshold = 0.98;
 
-	
 	public static final String INDEX_DIRECTORY = "lucene-index";
 	public static final Version LUCENE_VERSION = Version.LUCENE_36;
 
+	List<Double> latDb=new ArrayList<Double>();
+	List<Double> lonDb=new ArrayList<Double>();
 	//String stor;
 
 	/**
@@ -73,13 +86,13 @@ public class LuceneIndexingfromCSV {
 			e.printStackTrace();
 		}
 
-		List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
+		//List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
 		//System.out.println(" the latValue is found: " + result.get(0));
 		//System.out.println(" the lonValue is found: " + result.get(1));
 
-		String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
+		//String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
 
-		System.out.println(" the street is found: " + result_2);
+		//System.out.println(" the street is found: " + result_2);
 	}
 
 	/**
@@ -220,12 +233,12 @@ public class LuceneIndexingfromCSV {
 			throws ParseException, IOException, ParseException, org.apache.lucene.queryParser.ParseException {
 		String streetValue=null;
 		org.apache.lucene.search.Query query = null;
-		
+
 		double Lat_Rdf = Double.parseDouble(lat);
 		double Lon_Rdf = Double.parseDouble(lon);
 		Term term = new Term("latPos", lat.trim());
-          String xx= term.text();
-          System.out.println(" print the term = "+ xx);
+		String xx= term.text();
+		System.out.println(" print the term = "+ xx);
 		query = new FuzzyQuery(term, 0.7f);
 
 		// query = parser.parse(streetName.trim());
@@ -242,14 +255,14 @@ public class LuceneIndexingfromCSV {
 			Document d = indexSearcher.doc(docId);
 			//System.out.println(i + ". " + d.get("latPos"));
 			String latValue = d.get("latPos");
-                   List<String> acumlatValue =new ArrayList<String>();
-                   acumlatValue.add(latValue);
-                   
-           		for (String temp : acumlatValue) {
-        			//System.out.println(temp);
-        			latDb.add(Double.parseDouble(temp));
-        			System.out.println("Print the latValue acuumolator: "+ latDb);
-        		}
+			List<String> acumlatValue =new ArrayList<String>();
+			acumlatValue.add(latValue);
+
+			for (String temp : acumlatValue) {
+				//System.out.println(temp);
+				latDb.add(Double.parseDouble(temp));
+				System.out.println("Print the latValue acuumolator: "+ latDb);
+			}
 			//System.out.println("Print the latValue acuumolator: "+ latDb);
 
 			if(!latValue.isEmpty());
@@ -258,26 +271,26 @@ public class LuceneIndexingfromCSV {
 			query = new FuzzyQuery(term_1, 0.7f);
 
 			String lonValue=d.get("lonPos");
-		     List<String> acumlonValue =new ArrayList<String>();
-             acumlonValue.add(lonValue);
-             
-        		for (String temp : acumlonValue) {
-     			//System.out.println(temp);
-     			lonDb.add(Double.parseDouble(temp));
-    			System.out.println("Print the lontValue acuumolator: "+ lonDb);
+			List<String> acumlonValue =new ArrayList<String>();
+			acumlonValue.add(lonValue);
 
-     		}
-             
+			for (String temp : acumlonValue) {
+				//System.out.println(temp);
+				lonDb.add(Double.parseDouble(temp));
+				System.out.println("Print the lontValue acuumolator: "+ lonDb);
+
+			}
+
 			if(!latValue.isEmpty()&& !lonValue.isEmpty());
 			if(latDb.size()==lonDb.size()) {
 				for (int k = 0; k < latDb.size(); k++) {
-				
-				
-			 distance= distance( Lat_Rdf,  Lon_Rdf, latDb.get(k ),lonDb.get(k));}
+
+
+					distance= distanceGreatCircle( Lat_Rdf,  Lon_Rdf, latDb.get(k ),lonDb.get(k));}
 				double error = 1 / (1 + distance);
 				System.out.println(" the DISTANCE = " + distance + " AND "+ "the ERROR = "+ error);
 				if (error >= dastanceThreshold)
-			streetValue= d.get("streetPos");
+					streetValue= d.get("streetPos");
 				System.out.println("Print the StreetValue: "+ streetValue );
 			}
 			//System.out.println("Print the StreetValue: "+ streetValue );
@@ -301,21 +314,83 @@ public class LuceneIndexingfromCSV {
 			config.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
 		return config;
 	}
-	
-	
+
+
 	/**
+	 * this method is the implementation of Great Circle formula 
 	 * @param lat1
 	 * @param lon1
 	 * @param lat2
 	 * @param lon2
 	 * @return
 	 */
-	public static double distance(double lat1, double lon1, double lat2, double lon2) {
+
+	public static double distanceGreatCircle(double lat1, double lon1, double lat2, double lon2) {
 
 		double value1 = Math.pow(Math.sin((lat1 - lat2) / 2.0) * D2R, 2)
 				+ Math.cos(lat1 * D2R) * Math.cos(lat2 * D2R) * Math.pow(Math.sin((lon1 - lon2) / 2.0) * D2R, 2);
 		double c = 2 * Math.atan2(Math.sqrt(value1), Math.sqrt(1 - value1));
-		double d = radius * c;
-		return d;
+		double distanceGreatCircleMeasure = radius * c;
+		return distanceGreatCircleMeasure;
+	}
+
+
+
+	/**
+	 * this method is the implementation of  Vincenty formula
+	 * 
+	 * @param lat1
+	 * @param lon1
+	 * @param lat2
+	 * @param lon2
+	 * @return
+	 */
+
+	public static double distanceVincenty(double lat1, double lon1, double lat2, double lon2) {
+
+		double a = 6378137, b = 6356752.314245, f = 1 / 298.257223563; 
+		double L = Math.toRadians(lon2 - lon1);
+		double U1 = Math.atan((1 - f) * Math.tan(Math.toRadians(lat1)));
+		double U2 = Math.atan((1 - f) * Math.tan(Math.toRadians(lat2)));
+		double sinU1 = Math.sin(U1), cosU1 = Math.cos(U1);
+		double sinU2 = Math.sin(U2), cosU2 = Math.cos(U2);
+
+		double sinLambda, cosLambda, sinSigma, cosSigma, sigma, sinAlpha, cosSqAlpha, cos2SigmaM;
+		double lambda = L, lambdaP, iterLimit = 100;
+		do {
+			sinLambda = Math.sin(lambda);
+			cosLambda = Math.cos(lambda);
+			sinSigma = Math.sqrt((cosU2 * sinLambda) * (cosU2 * sinLambda)
+					+ (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) * (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
+			if (sinSigma == 0)
+				return 0; 
+			cosSigma = sinU1 * sinU2 + cosU1 * cosU2 * cosLambda;
+			sigma = Math.atan2(sinSigma, cosSigma);
+			sinAlpha = cosU1 * cosU2 * sinLambda / sinSigma;
+			cosSqAlpha = 1 - sinAlpha * sinAlpha;
+			cos2SigmaM = cosSigma - 2 * sinU1 * sinU2 / cosSqAlpha;
+			if (Double.isNaN(cos2SigmaM))
+				cos2SigmaM = 0; 
+			double C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha));
+			lambdaP = lambda;
+			lambda = L + (1 - C) * f * sinAlpha
+					* (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
+		} while (Math.abs(lambda - lambdaP) > 1e-12 && --iterLimit > 0);
+
+		if (iterLimit == 0)
+			return Double.NaN; 
+
+		double uSq = cosSqAlpha * (a * a - b * b) / (b * b);
+		double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
+		double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
+		double deltaSigma = B
+				* sinSigma
+				* (cos2SigmaM + B
+						/ 4
+						* (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM) - B / 6 * cos2SigmaM
+								* (-3 + 4 * sinSigma * sinSigma) * (-3 + 4 * cos2SigmaM * cos2SigmaM)));
+		double distanceVincentyMeasure = b * A * (sigma - deltaSigma);
+
+		return distanceVincentyMeasure;
 	}
 }
