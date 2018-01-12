@@ -15,6 +15,12 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 
+/**
+ * @author Abdullah Ahmed
+ * 
+ * in this class we distort the rdf data in some degree to test out GeoModule
+ *
+ */
 public class ModelDistortion {
 
 	static ArrayList<String> allObjectsOFstreet=new ArrayList<String>();
@@ -242,9 +248,9 @@ public class ModelDistortion {
 		Model model= Reader.readModel("/home/abddatascienceadmin/deer/Data_4/geoDataLonLat.ttl");
 
 		ModelDistortion ModelDistortion= new ModelDistortion();
-		Model outputModel=ModelDistortion.modeldistor(model, 10,0.0001);
+		Model outputModel=ModelDistortion.modeldistor(model, 40,0.0001);
 
-		String outputFile= "/home/abddatascienceadmin/deer/Data_4/OutgeoDataLonLat10%.ttl";
+		String outputFile= "/home/abddatascienceadmin/deer/Data_4/OutgeoDataLonLat40%.ttl";
 		Writer.writeModel(outputModel, "TTL", outputFile);
 
 	}

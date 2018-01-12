@@ -204,13 +204,12 @@ public class LuceneIndexingfromCSV {
 			Document d = indexSearcher.doc(docId);
 			//System.out.println(i + ". " + d.get("streetPos"));
 			String streetValue = d.get("streetPos");
-			if(!streetValue.isEmpty());
-
-			String latValue = d.get("latPos");
-			String lonValue = d.get("lonPos");
-			arr.add(0,latValue);
-			arr.add(1,lonValue);
-
+			if(!streetValue.isEmpty()) {
+				String latValue = d.get("latPos");
+				String lonValue = d.get("lonPos");
+				arr.add(0,latValue);
+				arr.add(1,lonValue);
+			}
 			//System.out.println("Print the latValue: "+ arr[0]);
 			//System.out.println("Print the lonValue: "+ arr[0]);
 
