@@ -58,14 +58,14 @@ public class LuceneIndexingfromCSV {
 
 	protected static double D2R = Math.PI / 180;
 	protected static double radius = 6367;
-	protected static double dastanceThreshold = 0.98;
+	protected static double dastanceThreshold = 0.99;
 
 	public static final String INDEX_DIRECTORY = "lucene-index";
 	public static final Version LUCENE_VERSION = Version.LUCENE_36;
 
 	List<Double> latDb=new ArrayList<Double>();
 	List<Double> lonDb=new ArrayList<Double>();
-	//String stor;
+
 
 	/**
 	 * @param args
@@ -86,13 +86,6 @@ public class LuceneIndexingfromCSV {
 			e.printStackTrace();
 		}
 
-		//List<String> result = indexfromcsv.getLanandLon("SectorIElinglesillo 12");
-		//System.out.println(" the latValue is found: " + result.get(0));
-		//System.out.println(" the lonValue is found: " + result.get(1));
-
-		//String result_2= indexfromcsv.getStreetadress("-26.8178935","-49.1116889" );
-
-		//System.out.println(" the street is found: " + result_2);
 	}
 
 	/**
@@ -169,8 +162,6 @@ public class LuceneIndexingfromCSV {
 		IndexReader indexReader = IndexReader.open(FSDirectory.open(new File(NameOfindexDirectory)));
 		indexSearcher = new IndexSearcher(indexReader);
 
-		/*		indexedFields.addAll(headers);
-		System.out.println("print the headers " + headers);*/
 	}
 
 	/**
@@ -188,10 +179,7 @@ public class LuceneIndexingfromCSV {
 		org.apache.lucene.search.Query query = null;
 		Term term = new Term("streetPos", streetName.trim());
 
-		query = new FuzzyQuery(term, 0.94f);
-
-		// query = parser.parse(streetName.trim());
-		// TopDocs hits = searcher.search(query);
+		query = new FuzzyQuery(term, 0.5f);
 
 		TopScoreDocCollector collector = TopScoreDocCollector.create(1, true);
 		indexSearcher.search(query, collector);
@@ -199,22 +187,19 @@ public class LuceneIndexingfromCSV {
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
 		for (int i = 0; i < hits.length; ++i) {
+
 			int docId = hits[i].doc;
-			//System.out.println("Score: " + hits[i].score);
 			Document d = indexSearcher.doc(docId);
-			//System.out.println(i + ". " + d.get("streetPos"));
 			String streetValue = d.get("streetPos");
+
 			if(!streetValue.isEmpty()) {
 				String latValue = d.get("latPos");
 				String lonValue = d.get("lonPos");
 				arr.add(0,latValue);
 				arr.add(1,lonValue);
 			}
-			//System.out.println("Print the latValue: "+ arr[0]);
-			//System.out.println("Print the lonValue: "+ arr[0]);
 
 		}
-		//}
 		return arr;
 	}
 
@@ -227,21 +212,20 @@ public class LuceneIndexingfromCSV {
 	 * @throws ParseException
 	 * @throws org.apache.lucene.queryParser.ParseException
 	 */
+
+
 	public String getStreetadress(String lat, String lon)
 
 			throws ParseException, IOException, ParseException, org.apache.lucene.queryParser.ParseException {
-		String streetValue=null;
+
+		String streetValue="";
 		org.apache.lucene.search.Query query = null;
 
 		double Lat_Rdf = Double.parseDouble(lat);
 		double Lon_Rdf = Double.parseDouble(lon);
-		Term term = new Term("latPos", lat.trim());
-		String xx= term.text();
-		System.out.println(" print the term = "+ xx);
-		query = new FuzzyQuery(term, 0.7f);
 
-		// query = parser.parse(streetName.trim());
-		// TopDocs hits = searcher.search(query);
+		Term term = new Term("latPos", lat.trim());
+		query = new FuzzyQuery(term, 0.7f);
 
 		TopScoreDocCollector collector = TopScoreDocCollector.create(4, true);
 		indexSearcher.search(query, collector);
@@ -250,23 +234,17 @@ public class LuceneIndexingfromCSV {
 
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
-			//System.out.println("Score: " + hits[i].score);
 			Document d = indexSearcher.doc(docId);
-			//System.out.println(i + ". " + d.get("latPos"));
 			String latValue = d.get("latPos");
 			List<String> acumlatValue =new ArrayList<String>();
 			acumlatValue.add(latValue);
 
 			for (String temp : acumlatValue) {
-				//System.out.println(temp);
 				latDb.add(Double.parseDouble(temp));
-				System.out.println("Print the latValue acuumolator: "+ latDb);
 			}
-			//System.out.println("Print the latValue acuumolator: "+ latDb);
 
 			if(!latValue.isEmpty());
 			Term term_1 = new Term("lonPos", lon.trim());
-
 			query = new FuzzyQuery(term_1, 0.7f);
 
 			String lonValue=d.get("lonPos");
@@ -274,25 +252,27 @@ public class LuceneIndexingfromCSV {
 			acumlonValue.add(lonValue);
 
 			for (String temp : acumlonValue) {
-				//System.out.println(temp);
+
 				lonDb.add(Double.parseDouble(temp));
 				System.out.println("Print the lontValue acuumolator: "+ lonDb);
-
 			}
 
 			if(!latValue.isEmpty()&& !lonValue.isEmpty());
 			if(latDb.size()==lonDb.size()) {
+
 				for (int k = 0; k < latDb.size(); k++) {
 
 
-					distance= distanceGreatCircle( Lat_Rdf,  Lon_Rdf, latDb.get(k ),lonDb.get(k));}
+					distance= distanceGreatCircle( Lat_Rdf,  Lon_Rdf, latDb.get(k ),lonDb.get(k));
+				}
+
 				double error = 1 / (1 + distance);
 				System.out.println(" the DISTANCE = " + distance + " AND "+ "the ERROR = "+ error);
 				if (error >= dastanceThreshold)
 					streetValue= d.get("streetPos");
-				System.out.println("Print the StreetValue: "+ streetValue );
+
+				//System.out.println("Print the StreetValue: "+ streetValue );
 			}
-			//System.out.println("Print the StreetValue: "+ streetValue );
 
 
 		}
@@ -356,25 +336,31 @@ public class LuceneIndexingfromCSV {
 
 		double sinLambda, cosLambda, sinSigma, cosSigma, sigma, sinAlpha, cosSqAlpha, cos2SigmaM;
 		double lambda = L, lambdaP, iterLimit = 100;
+
 		do {
 			sinLambda = Math.sin(lambda);
 			cosLambda = Math.cos(lambda);
 			sinSigma = Math.sqrt((cosU2 * sinLambda) * (cosU2 * sinLambda)
 					+ (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) * (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
+
 			if (sinSigma == 0)
 				return 0; 
+
 			cosSigma = sinU1 * sinU2 + cosU1 * cosU2 * cosLambda;
 			sigma = Math.atan2(sinSigma, cosSigma);
 			sinAlpha = cosU1 * cosU2 * sinLambda / sinSigma;
 			cosSqAlpha = 1 - sinAlpha * sinAlpha;
 			cos2SigmaM = cosSigma - 2 * sinU1 * sinU2 / cosSqAlpha;
+
 			if (Double.isNaN(cos2SigmaM))
 				cos2SigmaM = 0; 
 			double C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha));
 			lambdaP = lambda;
 			lambda = L + (1 - C) * f * sinAlpha
 					* (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
-		} while (Math.abs(lambda - lambdaP) > 1e-12 && --iterLimit > 0);
+
+		} 
+		while (Math.abs(lambda - lambdaP) > 1e-12 && --iterLimit > 0);
 
 		if (iterLimit == 0)
 			return Double.NaN; 

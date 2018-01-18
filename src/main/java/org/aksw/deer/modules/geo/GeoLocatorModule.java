@@ -10,7 +10,6 @@ import org.aksw.deer.json.ParameterType;
 import org.aksw.deer.modules.DeerModule;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -30,7 +29,7 @@ public class GeoLocatorModule implements DeerModule {
 	public static final String OUTPUT_ADDRESS_PROPERTY           = "outputaddressproperty"; 
 	public static final String OUTPUT_LAT_PROPERTY               = "outputlatproperty";
 	public static final String OUTPUT_LONG_PROPERTY              = "outputlongproperty";
-	
+
 	LuceneIndexingfromCSV luceneFinder=new LuceneIndexingfromCSV("nameofdir");
 
 
@@ -79,44 +78,57 @@ public class GeoLocatorModule implements DeerModule {
 
 		Property inputLatProp = ResourceFactory.createProperty(inputLatPropName);
 		StmtIterator iter_Lat = model.listStatements(null, inputLatProp, (RDFNode) null);
+
+		double totalLuceneTime = 0d;
 		while (iter_Lat.hasNext()) {
+
 			Statement stmt = iter_Lat.nextStatement(); 
 			Resource subject = stmt.getSubject(); 
 			RDFNode object = stmt.getObject();
-			String OurObjectLat = object.asLiteral().toString();
+
+
+			//System.out.println("the object is "+object);
+			//System.out.println("the subjecct is "+subject);
+
+			double ourObjectLat=object.asLiteral().getDouble();
+		
 			Property inputLongProp = ResourceFactory.createProperty(inputLongPropName);
-			NodeIterator objectLatItr = model.listObjectsOfProperty(inputLongProp);
-			String values_Adress = null;// new ArrayList<>();
+			StmtIterator objectLatItr = subject.listProperties(inputLongProp);
+			
+			//String values_Adress = "";// new ArrayList<>();
+			Statement nextStmt= objectLatItr.next();
+			RDFNode nextObject=nextStmt.getObject();
 
-			while (objectLatItr.hasNext()) {
-				String OurObjectLong = objectLatItr.next().asLiteral().toString();
-				//FindwantedObject find = new FindwantedObject();
-				//LuceneIndexingfromCSV find_1=new LuceneIndexingfromCSV("nameofdir");
-/*				try {
-					find_1.createIndexFromCSV(LuceneIndexingfromCSV.csvFile, true);
+			double ourObjectLong=nextObject.asLiteral().getDouble();
 
-				} catch (IOException e) {
-					e.printStackTrace();
-				}*/
-				//values_Adress.addAll(find.TSVfindAddress(OurObjectLat, OurObjectLong));
-				try {
-					values_Adress=luceneFinder.getStreetadress(OurObjectLat, OurObjectLong);
-					//if(values_Adress.isEmpty());
-					
-					System.out.println(" the values of lat and long= "+ values_Adress);
+			//System.out.println(" the lat object: "+ ourObjectLat+" the long object: "+ourObjectLong);
+			try {
+				
+				long start = System.currentTimeMillis();
+				
+				String values_Adress=luceneFinder.getStreetadress(Double.toString(ourObjectLat), Double.toString(ourObjectLong));
+				
+				double luceneTime = (System.currentTimeMillis() - start) / 60000.0;
+				System.out.println("Lucene time = " + luceneTime);
+				totalLuceneTime += luceneTime;
+				System.out.println("totsl Lucene time so far = " + totalLuceneTime);
 
-				} catch (org.apache.lucene.queryParser.ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (! values_Adress.equals("")) {
+
+					//if(values_Adress!="") {
+					RDFNode NewObjectToAddOfLong = ResourceFactory. createStringLiteral(values_Adress);
+					Property outputLongProp = ResourceFactory.createProperty(OUTPUT_ADDRESS_PROPERTY);
+					model.add(subject, outputLongProp, NewObjectToAddOfLong);
 				}
+				//if(values_Adress.isEmpty());
+
+				System.out.println(" the obtained Street= "+ values_Adress);
+
+			} catch (org.apache.lucene.queryParser.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			//System.out.println(" print the street value = " +values_Adress );
-			//for (String Iteration : values_Adress) {
-			if(values_Adress!=null) {
-			RDFNode NewObjectToAddOfLong = ResourceFactory.createStringLiteral(values_Adress);
-			Property outputLongProp = ResourceFactory.createProperty(OUTPUT_ADDRESS_PROPERTY);
-			model.add(subject, outputLongProp, NewObjectToAddOfLong);
-			}
+
 		}
 		return model;
 	}
@@ -125,32 +137,26 @@ public class GeoLocatorModule implements DeerModule {
 		Model newModel= ModelFactory.createDefaultModel() ;
 		Property inputAddressProp = ResourceFactory.createProperty(inputAddressPropertyName);
 		StmtIterator iter = model.listStatements(null, inputAddressProp, (RDFNode) null);
-		
+
 		double totalLuceneTime = 0d;
-		
+
 		while (iter.hasNext()) {
 			Statement stmt = iter.nextStatement();
 			Resource subject = stmt.getSubject();
 			RDFNode object = stmt.getObject();
 
 			String OurObjectAdress = object.asLiteral().toString();
-			//FindwantedObject find = new FindwantedObject();
 			List<String> addressValues = null;
-/*			try {
-				find_1.createIndexFromCSV(LuceneIndexingfromCSV.csvFile, true);
 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}*/
 			try {
-				
+
 				long start = System.currentTimeMillis();
 				addressValues = luceneFinder.getLanandLon(OurObjectAdress);
 				double luceneTime = (System.currentTimeMillis() - start) / 60000.0;
 				System.out.println("Lucene time = " + luceneTime);
 				totalLuceneTime += luceneTime;
 				System.out.println("totsl Lucene time so far = " + totalLuceneTime);
-				
+
 				System.out.println(" the values of address= "+ addressValues);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
@@ -160,16 +166,17 @@ public class GeoLocatorModule implements DeerModule {
 				e.printStackTrace();
 			}
 			for (String Iteration : addressValues) {
-				 newModel= ModelFactory.createDefaultModel() ;
+				newModel= ModelFactory.createDefaultModel() ;
 				RDFNode newObjectToAddOfAddress = ResourceFactory.createStringLiteral(Iteration);
 				Property outputLatAddress = ResourceFactory.createProperty(OUTPUT_LAT_PROPERTY);
 				newModel.add(subject, outputLatAddress, newObjectToAddOfAddress);
+
 				//Property outputLongtAddress = ResourceFactory.createProperty(OUTPUT_LONG_PROPERTY);
 				//model.add(subject, outputLongtAddress, NewObjectToAddOfAddress);
-				
+
 				System.out.println(" the model is -----> "+ newModel.toString());
 			}
-           model.add(newModel);
+			model.add(newModel);
 		}
 
 		return model;
