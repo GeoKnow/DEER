@@ -50,7 +50,6 @@ public class LuceneIndexingfromCSV {
 	static String input_1 = "/home/abddatascienceadmin/Downloads/geoconvert.csv";
 	public static File csvFile = new File(input_1);
 
-	//private List<String> indexedFields = new ArrayList<String>();
 	private IndexSearcher indexSearcher;
 	private String NameOfindexDirectory;
 
@@ -63,8 +62,6 @@ public class LuceneIndexingfromCSV {
 	public static final String INDEX_DIRECTORY = "lucene-index";
 	public static final Version LUCENE_VERSION = Version.LUCENE_36;
 
-	List<Double> latDb=new ArrayList<Double>();
-	List<Double> lonDb=new ArrayList<Double>();
 
 
 	/**
@@ -148,8 +145,6 @@ public class LuceneIndexingfromCSV {
 				d.add(new Field("lonPos", lonPos, Field.Store.YES, Field.Index.NOT_ANALYZED));
 				d.add(new Field("streetPos", StreetAndHaus, Field.Store.YES, Field.Index.NOT_ANALYZED));
 
-				//}
-				//}
 				indexWriter.addDocument(d);
 
 			}
@@ -225,9 +220,9 @@ public class LuceneIndexingfromCSV {
 		double Lon_Rdf = Double.parseDouble(lon);
 
 		Term term = new Term("latPos", lat.trim());
-		query = new FuzzyQuery(term, 0.7f);
+		query = new FuzzyQuery(term, 0.9f);
 
-		TopScoreDocCollector collector = TopScoreDocCollector.create(4, true);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(2, true);
 		indexSearcher.search(query, collector);
 
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
@@ -236,44 +231,20 @@ public class LuceneIndexingfromCSV {
 			int docId = hits[i].doc;
 			Document d = indexSearcher.doc(docId);
 			String latValue = d.get("latPos");
-			List<String> acumlatValue =new ArrayList<String>();
-			acumlatValue.add(latValue);
-
-			for (String temp : acumlatValue) {
-				latDb.add(Double.parseDouble(temp));
-			}
 
 			if(!latValue.isEmpty());
 			Term term_1 = new Term("lonPos", lon.trim());
-			query = new FuzzyQuery(term_1, 0.7f);
+			query = new FuzzyQuery(term_1, 0.9f);
 
 			String lonValue=d.get("lonPos");
-			List<String> acumlonValue =new ArrayList<String>();
-			acumlonValue.add(lonValue);
-
-			for (String temp : acumlonValue) {
-
-				lonDb.add(Double.parseDouble(temp));
-				System.out.println("Print the lontValue acuumolator: "+ lonDb);
-			}
 
 			if(!latValue.isEmpty()&& !lonValue.isEmpty());
-			if(latDb.size()==lonDb.size()) {
 
-				for (int k = 0; k < latDb.size(); k++) {
+			distance= distanceGreatCircle( Lat_Rdf,  Lon_Rdf,Double.parseDouble(latValue),Double.parseDouble(lonValue));
 
-
-					distance= distanceGreatCircle( Lat_Rdf,  Lon_Rdf, latDb.get(k ),lonDb.get(k));
-				}
-
-				double error = 1 / (1 + distance);
-				System.out.println(" the DISTANCE = " + distance + " AND "+ "the ERROR = "+ error);
-				if (error >= dastanceThreshold)
-					streetValue= d.get("streetPos");
-
-				//System.out.println("Print the StreetValue: "+ streetValue );
-			}
-
+			double similarty = 1 / (1 + distance);
+			if (similarty >= dastanceThreshold)
+				streetValue= d.get("streetPos");
 
 		}
 		return streetValue;
