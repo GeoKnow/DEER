@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.BasicConfigurator;
+//import org.apache.log4j.spi.LoggerFactory;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -22,8 +23,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -45,7 +46,7 @@ import au.com.bytecode.opencsv.CSVReader;
 public class LuceneIndexingfromCSV {
 
 
-	private static Logger logger = LoggerFactory.getLogger(LuceneIndexingfromCSV.class);
+	private static org.slf4j.Logger logger = LoggerFactory.getLogger(LuceneIndexingfromCSV.class);
 
 	static String input_1 = "/home/abddatascienceadmin/Downloads/geoconvert.csv";
 	public static File csvFile = new File(input_1);
@@ -95,7 +96,7 @@ public class LuceneIndexingfromCSV {
 			if (!new File(NameOfindexDirectory).exists()) {
 				new File(NameOfindexDirectory).mkdir();
 			} else {
-				IndexReader indexReader = IndexReader.open(FSDirectory.open(new File(NameOfindexDirectory)));
+				IndexReader indexReader = IndexReader.open(NIOFSDirectory.open(new File(NameOfindexDirectory)));
 				indexSearcher = new IndexSearcher(indexReader);
 			}
 			logger.info("Lucene index location: " + new File(NameOfindexDirectory).getAbsolutePath());
@@ -154,7 +155,7 @@ public class LuceneIndexingfromCSV {
 		reader.close();
 		logger.info("creating index is done.");
 
-		IndexReader indexReader = IndexReader.open(FSDirectory.open(new File(NameOfindexDirectory)));
+		IndexReader indexReader = IndexReader.open(NIOFSDirectory.open(new File(NameOfindexDirectory)));
 		indexSearcher = new IndexSearcher(indexReader);
 
 	}
@@ -174,8 +175,8 @@ public class LuceneIndexingfromCSV {
 		org.apache.lucene.search.Query query = null;
 		Term term = new Term("streetPos", streetName.trim());
 
-		query = new FuzzyQuery(term, 0.5f);
-
+		query = new FuzzyQuery(term, 0.5f,10);
+		// query2= new FuzzyQuery();
 		TopScoreDocCollector collector = TopScoreDocCollector.create(1, true);
 		indexSearcher.search(query, collector);
 
@@ -220,7 +221,7 @@ public class LuceneIndexingfromCSV {
 		double Lon_Rdf = Double.parseDouble(lon);
 
 		Term term = new Term("latPos", lat.trim());
-		query = new FuzzyQuery(term, 0.9f);
+		query = new FuzzyQuery(term, 0.9f,10);
 
 		TopScoreDocCollector collector = TopScoreDocCollector.create(2, true);
 		indexSearcher.search(query, collector);
