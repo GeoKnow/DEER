@@ -3,10 +3,10 @@
 @prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
 
 :d1		a				:Dataset ;
-		:inputFile			"/home/abddatascienceadmin/deer/datasets/6/input.nt".
+		:inputFile			"/home/abddatascienceadmin/deer/Data_4/OutgeoDataLonLat10%.ttl".
 
 :d2		a				:Dataset ;
-		:outputFile		"/home/abddatascienceadmin/deer/datasets/6/output.ttl" ;
+		:outputFile		"/home/abddatascienceadmin/deer/datasets/6/output4.ttl" ;
 		:outputFormat	"Turtle" .
 
 :geo	        a			:Module, :GeoLocatorModule  ;
@@ -17,14 +17,14 @@
 
 :geoPram1	a		        :ModuleParameter, :GeoLocatorModuleParameter ;
 		:hasKey			"inputlatproperty" ;
-		:hasValue		"http://deer.org/lat" .
+		:hasValue		"http://ex.org/a#lat" .
 
 :geoPram2	a		       :ModuleParameter, :GeoLocatorModuleParameter ;
 		:hasKey			"inputlongproperty" ;
-		:hasValue		"http://deer.org/lon" .
+		:hasValue		"http://ex.org/a#lon" .
 
 
 :geoPram3	a		       :ModuleParameter, :GeoLocatorModuleParameter ;
 		:hasKey			"outputaddressproperty" ;
-		:hasValue		"http://deer.org/street" .
+		:hasValue		"http://ex.org/a#street" .
 
