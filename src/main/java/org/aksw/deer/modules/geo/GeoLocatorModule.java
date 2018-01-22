@@ -91,10 +91,10 @@ public class GeoLocatorModule implements DeerModule {
 			//System.out.println("the subjecct is "+subject);
 
 			double ourObjectLat=object.asLiteral().getDouble();
-		
+
 			Property inputLongProp = ResourceFactory.createProperty(inputLongPropName);
 			StmtIterator objectLatItr = subject.listProperties(inputLongProp);
-			
+
 			//String values_Adress = "";// new ArrayList<>();
 			Statement nextStmt= objectLatItr.next();
 			RDFNode nextObject=nextStmt.getObject();
@@ -103,11 +103,11 @@ public class GeoLocatorModule implements DeerModule {
 
 			//System.out.println(" the lat object: "+ ourObjectLat+" the long object: "+ourObjectLong);
 			try {
-				
+
 				long start = System.currentTimeMillis();
-				
+
 				String values_Adress=luceneFinder.getStreetadress(Double.toString(ourObjectLat), Double.toString(ourObjectLong));
-				
+
 				double luceneTime = (System.currentTimeMillis() - start) / 60000.0;
 				System.out.println("Lucene time = " + luceneTime);
 				totalLuceneTime += luceneTime;
@@ -134,7 +134,7 @@ public class GeoLocatorModule implements DeerModule {
 	}
 
 	private Model findLongLat(Model model, String inputAddressPropertyName) throws IOException {
-		Model newModel= ModelFactory.createDefaultModel() ;
+		//Model newModel= ModelFactory.createDefaultModel() ;
 		Property inputAddressProp = ResourceFactory.createProperty(inputAddressPropertyName);
 		StmtIterator iter = model.listStatements(null, inputAddressProp, (RDFNode) null);
 
@@ -166,17 +166,17 @@ public class GeoLocatorModule implements DeerModule {
 				e.printStackTrace();
 			}
 			for (String Iteration : addressValues) {
-				newModel= ModelFactory.createDefaultModel() ;
+				model= ModelFactory.createDefaultModel() ;
 				RDFNode newObjectToAddOfAddress = ResourceFactory.createStringLiteral(Iteration);
 				Property outputLatAddress = ResourceFactory.createProperty(OUTPUT_LAT_PROPERTY);
-				newModel.add(subject, outputLatAddress, newObjectToAddOfAddress);
+				model.add(subject, outputLatAddress, newObjectToAddOfAddress);
 
-				//Property outputLongtAddress = ResourceFactory.createProperty(OUTPUT_LONG_PROPERTY);
-				//model.add(subject, outputLongtAddress, NewObjectToAddOfAddress);
+				Property outputLongtAddress = ResourceFactory.createProperty(OUTPUT_LONG_PROPERTY);
 
-				System.out.println(" the model is -----> "+ newModel.toString());
+
+				System.out.println(" the model is -----> "+ model.toString());
 			}
-			model.add(newModel);
+			//model;
 		}
 
 		return model;
