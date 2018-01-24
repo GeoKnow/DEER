@@ -9,7 +9,6 @@ import java.util.Map;
 import org.aksw.deer.json.ParameterType;
 import org.aksw.deer.modules.DeerModule;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -164,18 +163,27 @@ public class GeoLocatorModule implements DeerModule {
 			} catch (org.apache.lucene.queryParser.ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+
 			}
-			for (String Iteration : addressValues) {
-				model= ModelFactory.createDefaultModel() ;
-				RDFNode newObjectToAddOfAddress = ResourceFactory.createStringLiteral(Iteration);
+
+			//for (String Iteration : addressValues) {
+
+			//System.out.println("Iteratrion: "+Iteration);
+			//model= ModelFactory.createDefaultModel() ;
+			if(addressValues.size()!=0) {
+				RDFNode newLatObject = ResourceFactory.createStringLiteral(addressValues.get(0));
+				System.out.println("newLatObject: "+ newLatObject);
 				Property outputLatAddress = ResourceFactory.createProperty(OUTPUT_LAT_PROPERTY);
-				model.add(subject, outputLatAddress, newObjectToAddOfAddress);
+				model.add(subject, outputLatAddress, newLatObject);
 
+
+				RDFNode newLonObject = ResourceFactory.createStringLiteral(addressValues.get(1));
+				System.out.println("newLonObject: "+ newLonObject);
 				Property outputLongtAddress = ResourceFactory.createProperty(OUTPUT_LONG_PROPERTY);
-
-
-				System.out.println(" the model is -----> "+ model.toString());
+				model.add(subject, outputLongtAddress, newLonObject);
 			}
+			//System.out.println(" the model is -----> "+ model.toString());
+			//}
 			//model;
 		}
 
